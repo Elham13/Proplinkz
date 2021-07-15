@@ -15,7 +15,6 @@ const ListOptions = ({navigation}) => {
   const optionsList = [
     {title: 'Buy a Property', img: require('../../assets/house1.jpg')},
     {title: 'Rent a Property', img: require('../../assets/house2.jpg')},
-    {title: 'Lease a Property', img: require('../../assets/house3.jpg')},
   ];
   return (
     <View style={style.optionListsContainer}>
@@ -27,10 +26,8 @@ const ListOptions = ({navigation}) => {
             navigation.navigate('BuyHome', option.title);
           }}
           key={index}>
-          {/* House image */}
           <Image source={option.img} style={style.optionsCardImage} />
 
-          {/* Option title */}
           <Text style={style.text}>{option.title}</Text>
         </TouchableOpacity>
       ))}
@@ -49,7 +46,7 @@ const style = StyleSheet.create({
   },
   optionsCard: {
     height: 100,
-    width: width / 3 - 20,
+    width: width / 2 - 25,
     elevation: 15,
     alignItems: 'center',
     backgroundColor: COLORS.white,

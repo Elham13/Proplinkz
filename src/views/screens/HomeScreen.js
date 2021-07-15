@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -6,8 +6,11 @@ import {
   Dimensions,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
 import COLORS from '../../consts/colors';
+import {getAllPropertiesAction} from '../../redux/actions/propertyActions';
 
 import houses from '../../consts/houses';
 import ListCategories from '../components/ListCtegories';
@@ -18,6 +21,17 @@ import GeneralHeader from '../../navigations/headers/generalHeader';
 const {width} = Dimensions.get('screen');
 
 const HomeScreen = ({navigation}) => {
+  const dispatch = useDispatch();
+  const properties = useSelector(state => state.getAllProperties);
+
+  // useEffect(() => {
+  //   console.log('HOuses: ', properties);
+  // }, [properties]);
+
+  useEffect(() => {
+    dispatch(getAllPropertiesAction());
+  }, [dispatch]);
+
   return (
     <SafeAreaView style={style.container}>
       {/* Customise status bar */}
@@ -32,15 +46,21 @@ const HomeScreen = ({navigation}) => {
 
         <ListCategories />
 
-        <FlatList
-          snapToInterval={width - 20}
-          keyExtractor={item => item.id}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={style.contentContainerStyle}
-          horizontal
-          data={houses}
-          renderItem={({item}) => <Card house={item} navigation={navigation} />}
-        />
+        {properties.loading ? (
+          <ActivityIndicator color={COLORS.accent} size="large" />
+        ) : (
+          <FlatList
+            snapToInterval={width - 20}
+            keyExtractor={item => item._id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={style.contentContainerStyle}
+            horizontal
+            data={properties.res}
+            renderItem={({item}) => (
+              <Card house={item} navigation={navigation} />
+            )}
+          />
+        )}
       </ScrollView>
     </SafeAreaView>
   );

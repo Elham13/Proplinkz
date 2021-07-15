@@ -1,8 +1,22 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, StyleSheet, Text, TouchableOpacity, Image} from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DrawerContent = ({navigation}) => {
+  const [user, setUser] = useState(null);
+
+  const handlePostProperty = () => {
+    user ? navigation.navigate('SelerScreen') : navigation.navigate('Login');
+  };
+  useEffect(async () => {
+    // await AsyncStorage.removeItem('@user');
+    const user = await AsyncStorage.getItem('@user');
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+  });
+
   return (
     <View style={styles.container}>
       <View style={styles.top}>
@@ -25,7 +39,7 @@ const DrawerContent = ({navigation}) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.drawerNav}
-            onPress={() => navigation.navigate('SelerScreen')}>
+            onPress={handlePostProperty}>
             <View style={styles.navTxtWrapper}>
               <MaterialIcons name="circle" size={10} color="#333" />
               <Text style={styles.navTxt}>Post Property</Text>

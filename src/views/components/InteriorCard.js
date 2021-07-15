@@ -1,9 +1,13 @@
 import React from 'react';
-import {View, Text, StyleSheet, Dimensions, Image} from 'react-native';
+import {StyleSheet, Dimensions, Image, TouchableOpacity} from 'react-native';
 
 const {width} = Dimensions.get('screen');
-const InteriorCard = ({interior}) => {
-  return <Image source={interior} style={style.interiorImage} />;
+const InteriorCard = ({interior, handleClick, i}) => {
+  return (
+    <TouchableOpacity activeOpacity={0.6} onPress={() => handleClick(i)}>
+      <Image source={{uri: interior}} style={style.interiorImage} />
+    </TouchableOpacity>
+  );
 };
 
 export default InteriorCard;

@@ -8,6 +8,10 @@ const COLORS = {
   red: 'red',
   tranparent: 'rgba(0,0,0,0)',
   accent: '#26a8d0',
+  success: '#4caf50',
+  warning: '#ff9800',
+  error: '#f44336',
+  info: '#2196f3',
 };
 
 export default COLORS;

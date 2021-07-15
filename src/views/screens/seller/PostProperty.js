@@ -1,162 +1,628 @@
-import React, {useEffect, useState} from 'react';
-import axios from 'axios';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   StyleSheet,
-  View,
   Text,
-  ScrollView,
+  View,
   TouchableOpacity,
-  Platform,
+  Image,
+  ActivityIndicator,
+  ScrollView,
 } from 'react-native';
-import {Incubator} from 'react-native-ui-lib';
+import {
+  RadioButton,
+  RadioGroup,
+  Incubator,
+  KeyboardAwareScrollView,
+  Toast,
+} from 'react-native-ui-lib';
+import axios from 'axios';
 import {Picker} from '@react-native-community/picker';
+// import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import ImagePicker from 'react-native-image-crop-picker';
+import DatePicker from 'react-native-date-picker';
+import {useDispatch, useSelector} from 'react-redux';
 import COLORS from '../../../consts/colors';
-import {customStyles, localApi} from '../../../consts/utils';
+import {customStyles, localApi, proptypes, WIDTH} from '../../../consts/utils';
+import {addPropertyAction} from '../../../redux/actions/propertyActions';
 
 const {TextField} = Incubator;
 
-const SellerScreen = () => {
+const PostProperty = ({navigation}) => {
+  const dispatch = useDispatch();
+  const property = useSelector(state => state.createProperty);
+
+  navigator.geolocation = require('react-native-geolocation-service');
+
+  const scrollView = useRef();
+
+  const [date, setDate] = useState(new Date());
+  const [popup, setPopup] = useState({
+    open: false,
+    color: '',
+    message: '',
+    position: 'top',
+  });
   const [formData, setFormData] = useState({
-    type: 'selected',
-    for: 'selected',
-    subType: 'selected',
-    furnished: 'selected',
-    facing: 'selected',
-    title: '',
-    location: '',
-    price: '',
-    bedrooms: '',
-    bathrooms: '',
-    kitchens: '',
+    identity: '',
+    purpose: '',
+    available: 'Immediately',
+    bedrooms: 0,
+    balconies: 0,
+    floorNo: 0,
+    totalFloors: 0,
+    bathrooms: 0,
+    kitchens: 0,
     area: '',
-    noOfFloors: '',
-    whichFloor: '',
-    details: '',
+    propType: 'selected',
+    furnished: 'selected',
+    location: '',
+    rentDetails: {
+      rent: '',
+      securityDeposit: '',
+      maintenance: '',
+    },
+    saleDetaails: {
+      expectedPrice: '',
+      pricePerSqFt: '',
+    },
+    photos: [],
   });
 
+  const closePopup = () => {
+    setPopup({
+      open: false,
+      color: '',
+      message: '',
+      position: 'top',
+    });
+  };
+
+  const handleInputChange = key => {
+    return value => {
+      setFormData({
+        ...formData,
+        [key]: value,
+      });
+    };
+  };
+
+  const handleDateChange = txt => {
+    setDate(txt);
+    setFormData({...formData, available: date});
+  };
+
+  const isReadyToSubmit = () => {
+    const {identity, purpose, propType} = formData;
+
+    if (identity && purpose && propType !== 'selected') {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!isReadyToSubmit()) {
+      setPopup({
+        open: true,
+        color: COLORS.warning,
+        message: 'Make sure you provided the required data',
+        position: 'top',
+      });
+      return;
+    }
+    dispatch(addPropertyAction(formData));
+  };
+
   const launchImageLibrary = async () => {
-    // const fData = new FormData();
-    // fData.append('image', {message: "hi"});
-
-    // axios
-    //   .post('http://192.168.0.200:5000/', fData, {
-    //     headers: {
-    //       'Content-Type': 'multipart/form-data',
-    //     },
-    //   })
-    //   .then(res => console.log('Axios res', res.data))
-    //   .catch(err => console.log('Axios err: ', err));
-
-    ImagePicker.openPicker({
-      width: 400,
-      height: 400,
-      // includeBase64: true,
-      cropping: true,
-    })
-      .then(image => {
-        console.log('Image: ', image);
-        const fData = new FormData();
-        // const result = `data:${image.mime};base64,${image.data}`;
-        const result = {
-          name: 'image',
-          type: image.mime,
-          uri:
-            Platform.OS === 'android'
-              ? image.path
-              : image.path.replace('file://', ''),
-        };
-        fData.append('image', result);
-        console.log('Fdata: ', fData);
-
-        const config = {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        };
-
-        axios
-          .post(`http://192.168.0.200:5001/upload/single`, fData, config)
-          .then(res => console.log('Axios res', res.data))
-          .catch(err => console.log('Axios err: ', err));
+    if (formData.photos.length > 5) {
+      setPopup({
+        open: true,
+        color: COLORS.warning,
+        message: 'You can upload up to 6 images',
+        position: 'top',
+      });
+    } else {
+      ImagePicker.openPicker({
+        width: 5300,
+        height: 3400,
+        cropping: true,
       })
-      .catch(err => console.log('Picker err', err));
+        .then(image => {
+          const fData = new FormData();
+          const result = {
+            name: 'image',
+            type: image.mime,
+            uri:
+              Platform.OS === 'android'
+                ? image.path
+                : image.path.replace('file://', ''),
+          };
+          fData.append('image', result);
 
-    // try {
-    //   const {data} = await axios.post(
-    //     `${localAPI}/upload/single`,
-    //     fData,
-    //     config,
-    //   );
+          const config = {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          };
 
-    //   console.log('REsponse: ', data);
-    //   setFormData({
-    //     ...formData,
-    //     photo: data,
-    //   });
-    //   setUploading(false);
-    // } catch (error) {
-    //   setAlertPoput({
-    //     open: true,
-    //     message: error.message,
-    //     severity: 'error',
-    //   });
-    //   setUploading(false);
-    // }
-    // })
-    // .catch(err => {
-    //   if (err.message === 'User cancelled image selection') {
-    //     console.log('Canceled');
-    //   }
-    // });
+          axios
+            .post(`${localApi}/upload/single`, fData, config)
+            .then(res => {
+              // console.log('Axios res', res.data);
+              setFormData({
+                ...formData,
+                photos: [...formData.photos, res.data],
+              });
+            })
+            .catch(err => console.log('Axios err: ', err));
+        })
+        .catch(err => console.log('Picker err', err));
+    }
   };
 
   useEffect(() => {
-    // console.log('FormData: ', Incubator);
-  }, [formData]);
+    if (property.err) {
+      scrollView.current.scrollTo({x: 0, y: 0, animated: true});
+      setPopup({
+        open: true,
+        color: COLORS.error,
+        message: property.err,
+        position: 'top',
+      });
+      return;
+    }
+    if (property.res) {
+      setFormData({
+        identity: '',
+        purpose: '',
+        available: 'Immediately',
+        bedrooms: 0,
+        balconies: 0,
+        floorNo: 0,
+        totalFloors: 0,
+        bathrooms: 0,
+        kitchens: 0,
+        area: '',
+        propType: 'selected',
+        furnished: 'selected',
+        location: '',
+        rentDetails: {
+          rent: '',
+          securityDeposit: '',
+          maintenance: '',
+        },
+        saleDetaails: {
+          expectedPrice: '',
+          pricePerSqFt: '',
+        },
+        photos: [],
+      });
+      setPopup({
+        open: true,
+        color: COLORS.success,
+        message: property.res,
+        position: 'top',
+      });
+    }
+    return () => {
+      setPopup({
+        open: false,
+        color: '',
+        message: '',
+        position: 'top',
+      });
+    };
+  }, [property]);
 
   return (
-    <View behavior="height" style={styles.container}>
-      <Text style={styles.title}>Post your Property</Text>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.formWrapper}>
-          <Picker
-            selectedValue={formData.type}
-            mode="dialog"
-            onValueChange={(itemValue, itemIndex) =>
-              setFormData({...formData, type: itemValue})
-            }>
-            <Picker.Item label="Property type" value="selected" />
-            <Picker.Item label="Apartement" value="Apartement" />
-            <Picker.Item label="Villa" value="Villa" />
-            <Picker.Item label="Flat" value="Flat" />
-          </Picker>
-          <View style={styles.separatore}></View>
+    <ScrollView ref={scrollView} style={styles.container}>
+      <Toast
+        visible={popup.open}
+        position={popup.position}
+        backgroundColor={popup.color}
+        message={popup.message}
+        onDismiss={closePopup}
+        autoDismiss={10000}
+        showDismiss={true}
+      />
+      <Text style={styles.label}>
+        Personal details <Text style={styles.required}>*</Text>
+      </Text>
+      <RadioGroup
+        initialValue={formData.identity}
+        onValueChange={value => setFormData({...formData, identity: value})}>
+        <View style={styles.radioWrapper}>
+          <Text>I am: </Text>
+          <RadioButton
+            style={{width: 16, height: 16, marginLeft: 20}}
+            value="Owner"
+            label="Owner"
+            color={COLORS.accent}
+          />
+          <RadioButton
+            style={{width: 16, height: 16, marginLeft: 20}}
+            value="Agent"
+            label="Agent"
+            color={COLORS.accent}
+          />
+          <RadioButton
+            style={{width: 16, height: 16, marginLeft: 20}}
+            value="Builder"
+            label="Builder"
+            color={COLORS.accent}
+          />
+        </View>
+      </RadioGroup>
 
-          <Picker
-            selectedValue={formData.subType}
-            mode="dialog"
-            onValueChange={(itemValue, itemIndex) =>
-              setFormData({...formData, subType: itemValue})
-            }>
-            <Picker.Item label="Property Subtype" value="selected" />
-            <Picker.Item label="BHK" value="BHK" />
-            <Picker.Item label="RK" value="RK" />
-          </Picker>
-          <View style={styles.separatore}></View>
+      <Text style={[styles.label, {marginTop: 30}]}>
+        Property details <Text style={styles.required}>*</Text>
+      </Text>
+      <RadioGroup
+        initialValue={formData.purpose}
+        onValueChange={value => setFormData({...formData, purpose: value})}>
+        <View style={styles.radioWrapper}>
+          <Text>For: </Text>
+          <RadioButton
+            style={{width: 16, height: 16, marginLeft: 20}}
+            value="Sale"
+            label="Sale"
+            color={COLORS.accent}
+          />
+          <RadioButton
+            style={{width: 16, height: 16, marginLeft: 20}}
+            value="Rent"
+            label="Rent"
+            color={COLORS.accent}
+          />
+        </View>
+      </RadioGroup>
+      <View style={customStyles.divider}></View>
 
-          <Picker
-            selectedValue={formData.for}
-            mode="dialog"
-            onValueChange={(itemValue, itemIndex) =>
-              setFormData({...formData, for: itemValue})
+      <Text style={[styles.label, {marginTop: 30, marginBottom: 0}]}>
+        Property type <Text style={styles.required}>*</Text>
+      </Text>
+      <Picker
+        selectedValue={formData.propType}
+        mode="dialog"
+        style={{borderBottomWidth: 20, borderBottomColor: '#000'}}
+        onValueChange={(itemValue, itemIndex) =>
+          setFormData({...formData, propType: itemValue})
+        }>
+        <Picker.Item label="Property type" value="selected" />
+        {proptypes.map((p, ind) => (
+          <Picker.Item key={ind} label={p} value={p} />
+        ))}
+      </Picker>
+      <View style={customStyles.divider}></View>
+
+      {formData.propType !== 'selected' && (
+        <>
+          <Text style={[styles.label, {marginTop: 20}]}>Property features</Text>
+          <View style={customStyles.flexRowBetween}>
+            <View style={styles.counter}>
+              <Text>Bedrooms: </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, bedrooms: formData.bedrooms - 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopRightRadius: 0, borderBottomRightRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#8722;</Text>
+              </TouchableOpacity>
+              <Text style={styles.counterTxt}>{formData.bedrooms}</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, bedrooms: formData.bedrooms + 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopLeftRadius: 0, borderBottomLeftRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#43;</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.counter}>
+              <Text>Balconies: </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, balconies: formData.balconies - 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopRightRadius: 0, borderBottomRightRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#8722;</Text>
+              </TouchableOpacity>
+              <Text style={styles.counterTxt}>{formData.balconies}</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, balconies: formData.balconies + 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopLeftRadius: 0, borderBottomLeftRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#43;</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.counter}>
+              <Text>Floor No: </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, floorNo: formData.floorNo - 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopRightRadius: 0, borderBottomRightRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#8722;</Text>
+              </TouchableOpacity>
+              <Text style={styles.counterTxt}>{formData.floorNo}</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, floorNo: formData.floorNo + 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopLeftRadius: 0, borderBottomLeftRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#43;</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.counter}>
+              <Text>Total Floors: </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({
+                    ...formData,
+                    totalFloors: formData.totalFloors - 1,
+                  })
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopRightRadius: 0, borderBottomRightRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#8722;</Text>
+              </TouchableOpacity>
+              <Text style={styles.counterTxt}>{formData.totalFloors}</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({
+                    ...formData,
+                    totalFloors: formData.totalFloors + 1,
+                  })
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopLeftRadius: 0, borderBottomLeftRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#43;</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.counter}>
+              <Text>Bathrooms: </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, bathrooms: formData.bathrooms - 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopRightRadius: 0, borderBottomRightRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#8722;</Text>
+              </TouchableOpacity>
+              <Text style={styles.counterTxt}>{formData.bathrooms}</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, bathrooms: formData.bathrooms + 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopLeftRadius: 0, borderBottomLeftRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#43;</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.counter}>
+              <Text>Kitchens: </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, kitchens: formData.kitchens - 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopRightRadius: 0, borderBottomRightRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#8722;</Text>
+              </TouchableOpacity>
+              <Text style={styles.counterTxt}>{formData.kitchens}</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  setFormData({...formData, kitchens: formData.kitchens + 1})
+                }
+                activeOpacity={0.6}
+                style={[
+                  styles.counterBtn,
+                  {borderTopLeftRadius: 0, borderBottomLeftRadius: 0},
+                ]}>
+                <Text style={{color: COLORS.white}}>&#43;</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <TextField
+            floatingPlaceholder
+            floatingPlaceholderColor={{
+              default: COLORS.grey,
+              focus: COLORS.accent,
+            }}
+            floatOnFocus
+            fieldStyle={styles.withUnderline}
+            placeholder="Area in sqft"
+            keyboardType="number-pad"
+            value={formData.area}
+            onChangeText={handleInputChange('area')}
+          />
+          {formData.purpose === 'Rent' ? (
+            <>
+              <TextField
+                floatingPlaceholder
+                floatingPlaceholderColor={{
+                  default: COLORS.grey,
+                  focus: COLORS.accent,
+                }}
+                floatOnFocus
+                fieldStyle={styles.withUnderline}
+                placeholder="Monthly Rent"
+                keyboardType="number-pad"
+                value={formData.rentDetails.rent}
+                onChangeText={txt =>
+                  setFormData({
+                    ...formData,
+                    rentDetails: Object.assign(formData.rentDetails, {
+                      rent: txt,
+                    }),
+                  })
+                }
+              />
+              <TextField
+                floatingPlaceholder
+                floatingPlaceholderColor={{
+                  default: COLORS.grey,
+                  focus: COLORS.accent,
+                }}
+                floatOnFocus
+                fieldStyle={styles.withUnderline}
+                placeholder="Security Deposit"
+                keyboardType="number-pad"
+                value={formData.rentDetails.securityDeposit}
+                onChangeText={txt =>
+                  setFormData({
+                    ...formData,
+                    rentDetails: Object.assign(formData.rentDetails, {
+                      securityDeposit: txt,
+                    }),
+                  })
+                }
+              />
+              <TextField
+                floatingPlaceholder
+                floatingPlaceholderColor={{
+                  default: COLORS.grey,
+                  focus: COLORS.accent,
+                }}
+                floatOnFocus
+                fieldStyle={[styles.withUnderline, {marginBottom: 20}]}
+                placeholder="Maintenance"
+                keyboardType="number-pad"
+                value={formData.rentDetails.maintenance}
+                onChangeText={txt =>
+                  setFormData({
+                    ...formData,
+                    rentDetails: Object.assign(formData.rentDetails, {
+                      maintenance: txt,
+                    }),
+                  })
+                }
+              />
+            </>
+          ) : (
+            <>
+              <TextField
+                floatingPlaceholder
+                floatingPlaceholderColor={{
+                  default: COLORS.grey,
+                  focus: COLORS.accent,
+                }}
+                floatOnFocus
+                fieldStyle={styles.withUnderline}
+                placeholder="Expected Price"
+                keyboardType="number-pad"
+                value={formData.saleDetaails.expectedPrice}
+                onChangeText={txt =>
+                  setFormData({
+                    ...formData,
+                    saleDetaails: Object.assign(formData.saleDetaails, {
+                      expectedPrice: txt,
+                    }),
+                  })
+                }
+              />
+              <TextField
+                floatingPlaceholder
+                floatingPlaceholderColor={{
+                  default: COLORS.grey,
+                  focus: COLORS.accent,
+                }}
+                floatOnFocus
+                fieldStyle={[styles.withUnderline, {marginBottom: 20}]}
+                placeholder="Price per sqft"
+                keyboardType="number-pad"
+                value={formData.saleDetaails.pricePerSqFt}
+                onChangeText={txt =>
+                  setFormData({
+                    ...formData,
+                    saleDetaails: Object.assign(formData.saleDetaails, {
+                      pricePerSqFt: txt,
+                    }),
+                  })
+                }
+              />
+            </>
+          )}
+
+          <RadioGroup
+            initialValue="Immediately"
+            onValueChange={value =>
+              setFormData({...formData, available: value})
             }>
-            <Picker.Item label="Purpose" value="selected" />
-            <Picker.Item label="For Rent" value="For Rent" />
-            <Picker.Item label="For Sale" value="For Sale" />
-            <Picker.Item label="For Lease" value="For Lease" />
-          </Picker>
-          <View style={styles.separatore}></View>
+            <View style={styles.radioWrapper}>
+              <Text>Available from: </Text>
+
+              <RadioButton
+                style={{width: 16, height: 16, marginLeft: 20}}
+                value="Immediately"
+                label="Immediately"
+                color={COLORS.accent}
+              />
+              <RadioButton
+                style={{width: 16, height: 16, marginLeft: 20}}
+                value="Date"
+                label="Select Date"
+                color={COLORS.accent}
+              />
+            </View>
+          </RadioGroup>
+
+          {formData.available !== 'Immediately' && (
+            <DatePicker
+              textColor={COLORS.accent}
+              style={{width: WIDTH}}
+              mode="date"
+              date={date}
+              onDateChange={handleDateChange}
+              androidVariant="nativeAndroid"
+            />
+          )}
+          <View style={customStyles.divider}></View>
 
           <Picker
             selectedValue={formData.furnished}
@@ -164,196 +630,146 @@ const SellerScreen = () => {
             onValueChange={(itemValue, itemIndex) =>
               setFormData({...formData, furnished: itemValue})
             }>
-            <Picker.Item label="Furnished" value="selected" />
-            <Picker.Item label="Fully furnished" value="Fully furnished" />
-            <Picker.Item label="Semi furnished" value="Semi furnished" />
+            <Picker.Item label="Furnished Status" value="selected" />
+            <Picker.Item label="Fully Furnished" value="Fully Furnished" />
+            <Picker.Item label="Semi Furnished" value="Semi Furnished" />
+            <Picker.Item label="Not Furnished" value="Not Furnished" />
           </Picker>
-          <View style={styles.separatore}></View>
 
-          <Picker
-            selectedValue={formData.facing}
-            mode="dialog"
-            onValueChange={(itemValue, itemIndex) =>
-              setFormData({...formData, facing: itemValue})
-            }>
-            <Picker.Item label="Facing" value="selected" />
-            <Picker.Item label="East" value="East" />
-            <Picker.Item label="West" value="West" />
-            <Picker.Item label="North" value="North" />
-            <Picker.Item label="South" value="South" />
-          </Picker>
-          <View style={styles.separatore}></View>
+          <View style={customStyles.divider}></View>
+        </>
+      )}
 
-          <TextField
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            placeholder="Enter Property Title"
-            value={formData.title}
-            onChangeText={text => setFormData({...formData, title: text})}
-          />
-          <TextField
-            textContentTyp="location"
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            placeholder="Enter location"
-            value={formData.location}
-            onChangeText={text => setFormData({...formData, location: text})}
-          />
-          <TextField
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            placeholder="Enter your Price"
-            keyboardType="number-pad"
-            value={formData.price}
-            onChangeText={text => setFormData({...formData, price: text})}
-          />
-          <TextField
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            placeholder="Area in square feet"
-            keyboardType="number-pad"
-            value={formData.area}
-            onChangeText={text => setFormData({...formData, area: text})}
-          />
-          <TextField
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            keyboardType="number-pad"
-            placeholder="No of Bedrooms"
-            value={formData.bedrooms}
-            onChangeText={text => setFormData({...formData, bedrooms: text})}
-          />
-          <TextField
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            keyboardType="number-pad"
-            placeholder="No of Bathrooms"
-            value={formData.bathrooms}
-            onChangeText={text => setFormData({...formData, bathrooms: text})}
-          />
-          <TextField
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            keyboardType="number-pad"
-            placeholder="No of Kitchens"
-            value={formData.kitchens}
-            onChangeText={text => setFormData({...formData, kitchens: text})}
-          />
-          <TextField
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            keyboardType="number-pad"
-            placeholder="No of Floors"
-            value={formData.noOfFloors}
-            onChangeText={text => setFormData({...formData, noOfFloors: text})}
-          />
-          <TextField
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            keyboardType="number-pad"
-            placeholder="Which floor"
-            value={formData.whichFloor}
-            onChangeText={text => setFormData({...formData, whichFloor: text})}
-          />
-          <TextField
-            floatingPlaceholder
-            floatingPlaceholderColor={{
-              default: COLORS.grey,
-              focus: COLORS.accent,
-            }}
-            floatOnFocus
-            fieldStyle={styles.withUnderline}
-            placeholder="Details"
-            value={formData.details}
-            onChangeText={text => setFormData({...formData, details: text})}
-          />
-          <TouchableOpacity
-            activeOpacity={0.6}
-            onPress={launchImageLibrary}
-            style={styles.btn}>
-            <Text style={customStyles.normalTxt}>Chose image</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
+      <TextField
+        floatingPlaceholder
+        floatingPlaceholderColor={{
+          default: COLORS.grey,
+          focus: COLORS.accent,
+        }}
+        floatOnFocus
+        fieldStyle={styles.withUnderline}
+        placeholder="Property Location"
+        value={formData.location}
+        onChangeText={handleInputChange('location')}
+      />
+
+      {/* <Text style={[styles.label, {marginTop: 30, marginBottom: 0}]}>
+        Select property location
+      </Text>
+      <GooglePlacesAutocomplete
+        currentLocation={true}
+        enableHighAccuracyLocation={true}
+        placeholder="Search"
+        onValueChange={val => console.log(val)}
+        onPress={(data, details = null) => {
+          // 'details' is provided when fetchDetails = true
+          console.log('Data: ', data, details);
+        }}
+        query={{
+          key: 'AIzaSyCm3epk5nBM6X_SIxK3yT5um9UGDpkNC5I',
+          language: 'en',
+        }}
+      /> */}
+
+      <View style={styles.imgWrapper}>
+        {formData.photos.length > 0 && (
+          <>
+            {formData.photos.map(photo => (
+              <Image key={photo} source={{uri: photo}} style={styles.img} />
+            ))}
+          </>
+        )}
+      </View>
+
+      <TouchableOpacity
+        activeOpacity={0.6}
+        onPress={launchImageLibrary}
+        style={styles.photoBtn}>
+        <Text style={customStyles.normalTxt}>Select image</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        activeOpacity={0.6}
+        style={styles.submit}
+        onPress={handleSubmit}>
+        {property.loading ? (
+          <ActivityIndicator color={COLORS.white} />
+        ) : (
+          <Text style={{color: COLORS.white}}>Post</Text>
+        )}
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
-export default SellerScreen;
+export default PostProperty;
 
 const styles = StyleSheet.create({
-  container: {},
-  title: {
-    textAlign: 'center',
-    marginVertical: 10,
-    fontSize: 18,
+  container: {
+    flex: 1,
+    padding: 10,
+  },
+  label: {
     fontWeight: '700',
+    fontSize: 14,
+    marginBottom: 10,
   },
-  formWrapper: {
-    paddingHorizontal: 20,
-    paddingBottom: 60,
+  row: {
+    flexDirection: 'row',
   },
+  radioWrapper: {marginBottom: 5, flexDirection: 'row'},
   withUnderline: {
     borderBottomWidth: 1,
     borderColor: COLORS.accent,
     paddingBottom: 4,
   },
-  separatore: {
-    backgroundColor: COLORS.accent,
-    width: '100%',
-    height: 1,
+  counter: {
+    flexDirection: 'row',
+    marginVertical: 10,
   },
-  btn: {
+  counterBtn: {
+    backgroundColor: COLORS.accent,
+    width: WIDTH / 12,
+    alignItems: 'center',
+    borderWidth: 0.6,
     borderColor: COLORS.accent,
-    padding: 10,
+    borderRadius: 2,
+  },
+  counterTxt: {
+    borderBottomColor: COLORS.accent,
+    borderBottomWidth: 0.6,
+    borderTopColor: COLORS.accent,
+    borderTopWidth: 0.6,
+    paddingHorizontal: 10,
+  },
+  submit: {
+    backgroundColor: COLORS.accent,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 4,
+    marginBottom: 30,
+  },
+  photoBtn: {
+    borderColor: COLORS.accent,
+    padding: 4,
+    alignItems: 'center',
     borderWidth: 1,
     marginVertical: 10,
-    width: 100,
+    width: WIDTH / 4,
     borderRadius: 3,
+  },
+  imgWrapper: {
+    marginVertical: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  img: {
+    width: WIDTH / 4 - 14,
+    height: WIDTH / 4 - 14,
+    marginRight: 4,
+    marginTop: 4,
+  },
+  required: {
+    color: COLORS.error,
   },
 });

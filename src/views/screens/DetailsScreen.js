@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {Fragment, useEffect, useState, useRef} from 'react';
 import {
   ImageBackground,
   SafeAreaView,
@@ -8,29 +8,86 @@ import {
   FlatList,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
-
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import {useDispatch, useSelector} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Toast} from 'react-native-ui-lib';
 import COLORS from '../../consts/colors';
+import {customStyles} from '../../consts/utils';
 import InteriorCard from '../components/InteriorCard';
+import {removeByAttr} from '../../consts/utils';
+import {
+  addToWishListAction,
+  getUserByIdAction,
+} from '../../redux/actions/userActions';
 
 const DetailsScreen = ({navigation, route}) => {
-  const [liked, setLiked] = useState(false);
-  const handleLike = () => {
-    setLiked(!liked);
-  };
-
   const house = route.params;
 
-  // useEffect(() => {
-  //   console.log(house);
-  // }, []);
+  const dispatch = useDispatch();
+  // const wishlist = useSelector(state => state.addToWishlist);
+  const user = useSelector(state => state.getUserById);
+
+  const scrollView = useRef();
+  const [imgIndex, setImgIndex] = useState(0);
+  const [userId, setUserId] = useState(null);
+  const [liked, setLiked] = useState(false);
+  const [popup, setPopup] = useState({
+    open: false,
+    color: '',
+    message: '',
+    position: 'top',
+  });
+
+  const handleLike = () => {
+    setLiked(true);
+  };
+
+  const handleDislike = () => {
+    setLiked(false);
+  };
+
+  const handleGetOwner = () => {
+    scrollView.current.scrollTo({x: 0, y: 0, animated: true});
+    setPopup({
+      open: true,
+      color: COLORS.success,
+      message: `Name: ${house.creatorName} \nMobile No: ${house.creatorMobile}\nEmail: ${house.creatorEmail}`,
+      position: 'top',
+    });
+  };
+
+  const handleImgIndex = index => {
+    setImgIndex(index);
+  };
+
+  const closePopup = () => {
+    setPopup({
+      open: false,
+      color: '',
+      message: '',
+      position: 'top',
+    });
+  };
 
   return (
     <SafeAreaView style={style.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <Toast
+        visible={popup.open}
+        position={popup.position}
+        backgroundColor={popup.color}
+        message={popup.message}
+        onDismiss={closePopup}
+        autoDismiss={10000}
+        showDismiss={true}
+      />
+      <ScrollView ref={scrollView} showsVerticalScrollIndicator={false}>
         <View style={style.backgroundImageContainer}>
-          <ImageBackground style={style.backgroundImage} source={house.image}>
+          <ImageBackground
+            style={style.backgroundImage}
+            source={{uri: house.photos[imgIndex]}}>
             <View style={style.header}>
               <View style={style.headerBtn}>
                 <Icon
@@ -39,29 +96,39 @@ const DetailsScreen = ({navigation, route}) => {
                   onPress={navigation.goBack}
                 />
               </View>
-              <TouchableOpacity
-                style={style.headerBtn}
-                onPress={handleLike}
-                activeOpacity={0.6}>
+
+              {/* {wishlist.loading ? (
+                <ActivityIndicator color={COLORS.accent} />
+              ) : ( */}
+              <Fragment>
                 {liked ? (
-                  <Icon name="favorite" size={30} color={COLORS.red} />
+                  <TouchableOpacity
+                    style={style.headerBtn}
+                    onPress={handleDislike}
+                    activeOpacity={0.6}>
+                    <Icon name="favorite" size={30} color={COLORS.red} />
+                  </TouchableOpacity>
                 ) : (
-                  <Icon name="favorite-border" size={30} color={COLORS.red} />
+                  <TouchableOpacity
+                    style={style.headerBtn}
+                    onPress={handleLike}
+                    activeOpacity={0.6}>
+                    <Icon name="favorite-border" size={30} color={COLORS.red} />
+                  </TouchableOpacity>
                 )}
-              </TouchableOpacity>
+              </Fragment>
+              {/* )} */}
             </View>
           </ImageBackground>
 
-          {/* Virtual Tag View */}
           <View style={style.virtualTag}>
-            <Text style={{color: COLORS.white}}>{house.for}</Text>
+            <Text style={{color: COLORS.white}}>{house.purpose}</Text>
           </View>
         </View>
 
         <View style={style.detailsContainer}>
-          {/* Name and rating view container */}
           <View style={style.detailsWrapper}>
-            <Text style={style.title}>{house.title}</Text>
+            <Text style={style.title}>{house.propType}</Text>
             <View style={style.ratingWrapper}>
               <View style={style.ratingTag}>
                 <Text style={{color: COLORS.white}}>4.8</Text>
@@ -70,10 +137,8 @@ const DetailsScreen = ({navigation, route}) => {
             </View>
           </View>
 
-          {/* Location text */}
           <Text style={style.location}>{house.location}</Text>
 
-          {/* Facilities container */}
           <View style={{flexDirection: 'row', marginTop: 20}}>
             <View style={style.facility}>
               <Icon name="hotel" color={COLORS.accent} size={18} />
@@ -85,34 +150,98 @@ const DetailsScreen = ({navigation, route}) => {
             </View>
             <View style={style.facility}>
               <Icon name="aspect-ratio" color={COLORS.accent} size={18} />
-              <Text style={style.facilityText}>{house.area} sqft area</Text>
+              <Text style={style.facilityText}>{house.area} sqft</Text>
             </View>
           </View>
           <Text style={{marginTop: 20, color: COLORS.grey}}>
             {house.details}
           </Text>
 
-          {/* Interior list */}
           <FlatList
             contentContainerStyle={{marginTop: 20}}
             horizontal
             showsHorizontalScrollIndicator={false}
             keyExtractor={(_, key) => key.toString()}
-            data={house.interiors}
-            renderItem={({item}) => <InteriorCard interior={item} />}
+            data={house.photos}
+            renderItem={({item, index}) => (
+              <InteriorCard
+                interior={item}
+                handleClick={handleImgIndex}
+                i={index}
+              />
+            )}
           />
 
-          {/* footer container */}
           <View style={style.footer}>
-            <View>
-              <Text style={style.price}>&#8377;{house.price}/month</Text>
-              <Text style={style.totalPrice}>Total Price</Text>
-            </View>
-            <TouchableOpacity style={style.bookNowBtn} activeOpacity={0.6}>
-              {house.for === 'For Rent' ? (
-                <Text style={{color: COLORS.white}}>Rent Now</Text>
+            {house.purpose === 'Rent' ? (
+              <Fragment>
+                <View
+                  style={[customStyles.flexRowBetween, {marginVertical: 2}]}>
+                  <Text style={customStyles.normalTxt}>Rent</Text>
+                  <Text style={style.price}>
+                    &#8377;{house.rentDetails.rent}/month
+                  </Text>
+                </View>
+                {house.rentDetails.securityDeposit && (
+                  <View
+                    style={[customStyles.flexRowBetween, {marginVertical: 2}]}>
+                    <Text style={customStyles.normalTxt}>Security Deposit</Text>
+                    <Text style={style.price}>
+                      &#8377;{house.rentDetails.securityDeposit}
+                    </Text>
+                  </View>
+                )}
+                {house.rentDetails.maintenance && (
+                  <View
+                    style={[customStyles.flexRowBetween, {marginVertical: 2}]}>
+                    <Text style={customStyles.normalTxt}>Maintenance</Text>
+                    <Text style={style.price}>
+                      &#8377;{house.rentDetails.maintenance}/month
+                    </Text>
+                  </View>
+                )}
+                <View
+                  style={[customStyles.flexRowBetween, {marginVertical: 2}]}>
+                  <Text style={customStyles.normalTxt}>Total</Text>
+                  <Text style={[style.price, {fontWeight: '700'}]}>
+                    &#8377;
+                    {house.rentDetails.securityDeposit +
+                      house.rentDetails.maintenance +
+                      house.rentDetails.rent}
+                  </Text>
+                </View>
+              </Fragment>
+            ) : (
+              <Fragment>
+                <View
+                  style={[customStyles.flexRowBetween, {marginVertical: 2}]}>
+                  <Text style={customStyles.normalTxt}>Expected Price</Text>
+                  <Text style={style.price}>
+                    &#8377;{house.saleDetaails.expectedPrice}
+                  </Text>
+                </View>
+                <View
+                  style={[customStyles.flexRowBetween, {marginVertical: 2}]}>
+                  <Text style={customStyles.normalTxt}>Price per sqft</Text>
+                  <Text style={style.price}>
+                    &#8377;{house.saleDetaails.pricePerSqFt}
+                  </Text>
+                </View>
+              </Fragment>
+            )}
+            <TouchableOpacity
+              onPress={handleGetOwner}
+              style={[
+                customStyles.btnContain,
+                {marginTop: 10, paddingVertical: 10},
+              ]}
+              activeOpacity={0.6}>
+              {house.identity === 'Owner' ? (
+                <Text style={{color: COLORS.white}}>Get Owner Info</Text>
+              ) : house.identity === 'Agent' ? (
+                <Text style={{color: COLORS.white}}>Get Agent Info</Text>
               ) : (
-                <Text style={{color: COLORS.white}}>Buy Now</Text>
+                <Text style={{color: COLORS.white}}>Get Builder Info</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -170,13 +299,10 @@ const style = StyleSheet.create({
     alignItems: 'center',
   },
   footer: {
-    height: 70,
     backgroundColor: COLORS.light,
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
     marginVertical: 10,
   },
   bookNowBtn: {
@@ -195,7 +321,7 @@ const style = StyleSheet.create({
   ratingWrapper: {flexDirection: 'row', alignItems: 'center'},
   rating: {fontSize: 13, marginLeft: 5},
   location: {fontSize: 16, color: COLORS.grey},
-  price: {color: COLORS.accent, fontWeight: 'bold', fontSize: 18},
+  price: {color: COLORS.accent, fontSize: 14},
   totalPrice: {fontSize: 12, color: COLORS.grey, fontWeight: 'bold'},
 });
 

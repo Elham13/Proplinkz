@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -13,16 +13,25 @@ import COLORS from '../../consts/colors';
 const {width} = Dimensions.get('screen');
 
 const Card = ({house, navigation}) => {
+  // useEffect(() => {
+  //   console.log('HOuser', house.photos[0]);
+  // }, [house]);
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={() => navigation.navigate('DetailsScreen', house)}>
       <View style={style.card}>
-        <Image source={house.image} style={style.cardImage} />
+        <Image source={{uri: house.photos[0]}} style={style.cardImage} />
         <View style={{marginTop: 10}}>
           <View style={style.info}>
-            <Text style={style.title}>{house.title}</Text>
-            <Text style={style.price}>&#8377;{house.price}</Text>
+            <Text style={style.title}>{house.propType}</Text>
+            {house.purpose === 'Rent' ? (
+              <Text style={style.price}>&#8377;{house.rentDetails.rent}</Text>
+            ) : (
+              <Text style={style.price}>
+                &#8377;{house.saleDetaails.expectedPrice}
+              </Text>
+            )}
           </View>
 
           {/* Location text */}
@@ -45,7 +54,7 @@ const Card = ({house, navigation}) => {
             </View>
             <View style={style.facility}>
               <Icon name="center-focus-weak" color={COLORS.accent} size={18} />
-              <Text style={style.facilityText}>{house.for}</Text>
+              <Text style={style.facilityText}>{house.purpose}</Text>
             </View>
           </View>
         </View>
@@ -69,6 +78,7 @@ const style = StyleSheet.create({
     width: '100%',
     height: 120,
     borderRadius: 15,
+    resizeMode: 'cover',
   },
   facilityWrapper: {marginTop: 10, flexDirection: 'row'},
   facility: {flexDirection: 'row', marginRight: 15},

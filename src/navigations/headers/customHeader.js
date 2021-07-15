@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import COLORS from '../../consts/colors';
 
-const CustomHeader = ({purpose, navigation}) => {
+const CustomHeader = ({purpose, navigation, onlyBack}) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -13,14 +13,18 @@ const CustomHeader = ({purpose, navigation}) => {
         onPress={() => navigation.goBack()}>
         <Icon name="keyboard-arrow-left" color={COLORS.white} size={24} />
       </TouchableOpacity>
-      <Text style={{color: COLORS.white}}>{purpose}</Text>
+      <Text style={styles.title}>{purpose}</Text>
       <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity activeOpacity={0.6} style={styles.btn}>
-          <Icon name="share" color={COLORS.white} size={24} />
-        </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.6} style={styles.btn}>
-          <Ionicons name="heart-outline" color={COLORS.white} size={24} />
-        </TouchableOpacity>
+        {!onlyBack && (
+          <>
+            <TouchableOpacity activeOpacity={0.6} style={styles.btn}>
+              <Icon name="share" color={COLORS.white} size={24} />
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.6} style={styles.btn}>
+              <Ionicons name="heart-outline" color={COLORS.white} size={24} />
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </View>
   );
@@ -38,4 +42,5 @@ const styles = StyleSheet.create({
   btn: {
     padding: 5,
   },
+  title: {color: COLORS.white, fontSize: 16, fontWeight: '700'},
 });

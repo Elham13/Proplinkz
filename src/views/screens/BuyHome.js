@@ -1,12 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import {FlatList, View} from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
 import CustomHeader from '../../navigations/headers/customHeader';
 import HomeItem from '../components/HomeItem';
 import houses from '../../consts/houses';
 import {customStyles} from '../../consts/utils';
+import {getFilteredPropsAction} from '../../redux/actions/propertyActions';
 
 const BuyHome = ({route, navigation}) => {
   const keyword = route.params;
+  const dispatch = useDispatch();
+  const filtered = useSelector(state => state.filteredProps);
   const [houseForSale, setHouseForSale] = useState([]);
   const [houseForRent, setHouseForRent] = useState([]);
   const [houseForLease, setHouseForLease] = useState([]);
@@ -29,12 +33,11 @@ const BuyHome = ({route, navigation}) => {
   useEffect(() => {
     if (keyword === 'Buy a Property') {
       findProperty(houses, 'For Sale');
+      dispatch(getFilteredPropsAction('Sale', '1'));
     }
     if (keyword === 'Rent a Property') {
       findProperty(houses, 'For Rent');
-    }
-    if (keyword === 'Lease a Property') {
-      findProperty(houses, 'For Lease');
+      dispatch(getFilteredPropsAction('Rent', '1'));
     }
   }, [keyword, houses]);
 
