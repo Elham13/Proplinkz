@@ -1,93 +1,98 @@
 import React, {useEffect, useState} from 'react';
-import {FlatList, View} from 'react-native';
+import {ActivityIndicator, FlatList, View, StyleSheet} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+import {TabBar} from 'react-native-ui-lib';
 import CustomHeader from '../../navigations/headers/customHeader';
 import HomeItem from '../components/HomeItem';
 import houses from '../../consts/houses';
 import {customStyles} from '../../consts/utils';
 import {getFilteredPropsAction} from '../../redux/actions/propertyActions';
+import COLORS from '../../consts/colors';
 
 const BuyHome = ({route, navigation}) => {
-  const keyword = route.params;
+  const {title, keyword} = route.params;
   const dispatch = useDispatch();
   const filtered = useSelector(state => state.filteredProps);
-  const [houseForSale, setHouseForSale] = useState([]);
-  const [houseForRent, setHouseForRent] = useState([]);
-  const [houseForLease, setHouseForLease] = useState([]);
-
-  const findProperty = (arr, key) => {
-    const result = arr.filter(a => a.for === key);
-    if (result.length) {
-      if (key === 'For Sale') {
-        setHouseForSale(result);
-      }
-      if (key === 'For Rent') {
-        setHouseForRent(result);
-      }
-      if (key === 'For Lease') {
-        setHouseForLease(result);
-      }
-    }
-  };
 
   useEffect(() => {
-    if (keyword === 'Buy a Property') {
-      findProperty(houses, 'For Sale');
+    if (title === 'Buy a Property') {
       dispatch(getFilteredPropsAction('Sale', '1'));
+      return;
     }
-    if (keyword === 'Rent a Property') {
-      findProperty(houses, 'For Rent');
+    if (title === 'Rent a Property') {
       dispatch(getFilteredPropsAction('Rent', '1'));
+      return;
     }
-  }, [keyword, houses]);
+    dispatch(getFilteredPropsAction(keyword, '1'));
+  }, [title, houses]);
+
+  // useEffect(() => {
+  //   console.log(`Title: ${title}, Keyword: ${keyword}`);
+  // }, []);
 
   return (
     <View>
-      {keyword === 'Buy a Property' ? (
-        <>
-          <CustomHeader purpose={keyword} navigation={navigation} />
-          <View style={customStyles.main}>
-            <FlatList
-              showsVerticalScrollIndicator={false}
-              keyExtractor={item => item.id}
-              data={houseForSale}
-              renderItem={({item}) => (
-                <HomeItem data={item} navigation={navigation} />
-              )}
-            />
-          </View>
-        </>
-      ) : keyword === 'Rent a Property' ? (
-        <>
-          <CustomHeader purpose={keyword} navigation={navigation} />
-          <View style={customStyles.main}>
-            <FlatList
-              showsVerticalScrollIndicator={false}
-              keyExtractor={item => item.id}
-              data={houseForRent}
-              renderItem={({item}) => (
-                <HomeItem data={item} navigation={navigation} />
-              )}
-            />
-          </View>
-        </>
+      <CustomHeader purpose={title} navigation={navigation} />
+      <TabBar
+        darkTheme={true}
+        selectedIndex={0}
+        indicatorStyle={styles.indicatore}>
+        <TabBar.Item
+          label="Scroll"
+          labelStyle={{color: COLORS.success}}
+          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
+        />
+        <TabBar.Item
+          label="View"
+          labelStyle={{color: COLORS.success}}
+          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
+          badgeProps={{size: 'pimpleSmall'}}
+        />
+        <TabBar.Item
+          label="tab"
+          labelStyle={{color: COLORS.success}}
+          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
+        />
+        <TabBar.Item
+          label="bar"
+          labelStyle={{color: COLORS.success}}
+          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
+        />
+        <TabBar.Item
+          label="Container"
+          labelStyle={{color: COLORS.success}}
+          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
+        />
+        <TabBar.Item
+          label="Mode"
+          labelStyle={{color: COLORS.success}}
+          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
+        />
+      </TabBar>
+      {filtered.loading ? (
+        <ActivityIndicator color={COLORS.accent} size="large" />
+      ) : filtered.err ? (
+        <Text>{filtered.err}</Text>
       ) : (
-        <>
-          <CustomHeader purpose={keyword} navigation={navigation} />
-          <View style={customStyles.main}>
-            <FlatList
-              showsVerticalScrollIndicator={false}
-              keyExtractor={item => item.id}
-              data={houseForLease}
-              renderItem={({item}) => (
-                <HomeItem data={item} navigation={navigation} />
-              )}
-            />
-          </View>
-        </>
+        <View style={customStyles.main}>
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            keyExtractor={item => item._id}
+            data={filtered.res.properties}
+            renderItem={({item}) => (
+              <HomeItem data={item} navigation={navigation} />
+            )}
+          />
+        </View>
       )}
     </View>
   );
 };
 
 export default BuyHome;
+
+const styles = StyleSheet.create({
+  indicatore: {
+    backgroundColor: COLORS.accent,
+  },
+});

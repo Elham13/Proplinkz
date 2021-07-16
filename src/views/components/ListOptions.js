@@ -23,7 +23,7 @@ const ListOptions = ({navigation}) => {
           activeOpacity={0.7}
           style={style.optionsCard}
           onPress={() => {
-            navigation.navigate('BuyHome', option.title);
+            navigation.navigate('BuyHome', {title: option.title, keyword: ''});
           }}
           key={index}>
           <Image source={option.img} style={style.optionsCardImage} />

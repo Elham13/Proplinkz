@@ -85,5 +85,8 @@ const style = StyleSheet.create({
     paddingLeft: 20,
     paddingVertical: 20,
   },
+  tabbar: {
+    marginVertical: 10,
+  },
 });
 export default HomeScreen;

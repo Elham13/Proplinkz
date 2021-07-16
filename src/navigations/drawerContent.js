@@ -9,6 +9,9 @@ const DrawerContent = ({navigation}) => {
   const handlePostProperty = () => {
     user ? navigation.navigate('SelerScreen') : navigation.navigate('Login');
   };
+  const handleTestScreen = () => {
+    navigation.navigate('TestScreen');
+  };
   useEffect(async () => {
     // await AsyncStorage.removeItem('@user');
     const user = await AsyncStorage.getItem('@user');
@@ -43,6 +46,13 @@ const DrawerContent = ({navigation}) => {
             <View style={styles.navTxtWrapper}>
               <MaterialIcons name="circle" size={10} color="#333" />
               <Text style={styles.navTxt}>Post Property</Text>
+            </View>
+            <MaterialIcons name="double-arrow" size={10} color="#333" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.drawerNav} onPress={handleTestScreen}>
+            <View style={styles.navTxtWrapper}>
+              <MaterialIcons name="circle" size={10} color="#333" />
+              <Text style={styles.navTxt}>Test screen</Text>
             </View>
             <MaterialIcons name="double-arrow" size={10} color="#333" />
           </TouchableOpacity>

@@ -10,29 +10,22 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import moment from 'moment';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import MCI from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useDispatch, useSelector} from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Toast} from 'react-native-ui-lib';
 import COLORS from '../../consts/colors';
 import {customStyles} from '../../consts/utils';
 import InteriorCard from '../components/InteriorCard';
-import {removeByAttr} from '../../consts/utils';
-import {
-  addToWishListAction,
-  getUserByIdAction,
-} from '../../redux/actions/userActions';
 
 const DetailsScreen = ({navigation, route}) => {
-  const house = route.params;
-
+  const {house} = route.params;
   const dispatch = useDispatch();
-  // const wishlist = useSelector(state => state.addToWishlist);
-  const user = useSelector(state => state.getUserById);
 
   const scrollView = useRef();
+
   const [imgIndex, setImgIndex] = useState(0);
-  const [userId, setUserId] = useState(null);
   const [liked, setLiked] = useState(false);
   const [popup, setPopup] = useState({
     open: false,
@@ -54,7 +47,7 @@ const DetailsScreen = ({navigation, route}) => {
     setPopup({
       open: true,
       color: COLORS.success,
-      message: `Name: ${house.creatorName} \nMobile No: ${house.creatorMobile}\nEmail: ${house.creatorEmail}`,
+      message: `Name: ${house.creatorName} \nMobile No: ${house.creatorMobile}`,
       position: 'top',
     });
   };
@@ -139,7 +132,7 @@ const DetailsScreen = ({navigation, route}) => {
 
           <Text style={style.location}>{house.location}</Text>
 
-          <View style={{flexDirection: 'row', marginTop: 20}}>
+          <View style={{flexDirection: 'row', marginVertical: 20}}>
             <View style={style.facility}>
               <Icon name="hotel" color={COLORS.accent} size={18} />
               <Text style={style.facilityText}>{house.bedrooms}</Text>
@@ -149,12 +142,48 @@ const DetailsScreen = ({navigation, route}) => {
               <Text style={style.facilityText}>{house.bathrooms}</Text>
             </View>
             <View style={style.facility}>
+              <Icon name="kitchen" color={COLORS.accent} size={18} />
+              <Text style={style.facilityText}>{house.kitchens}</Text>
+            </View>
+            <View style={style.facility}>
+              <MCI name="window-open-variant" color={COLORS.accent} size={18} />
+              <Text style={style.facilityText}>{house.balconies}</Text>
+            </View>
+            <View style={style.facility}>
               <Icon name="aspect-ratio" color={COLORS.accent} size={18} />
               <Text style={style.facilityText}>{house.area} sqft</Text>
             </View>
           </View>
-          <Text style={{marginTop: 20, color: COLORS.grey}}>
-            {house.details}
+          {house.available === 'Immediately' ? (
+            <Text
+              style={[
+                customStyles.normalTxt,
+                {marginVertical: 4, color: COLORS.grey},
+              ]}>
+              Available From: {moment(new Date()).format('DD/mm/yyyy')}
+            </Text>
+          ) : (
+            <Text
+              style={[
+                customStyles.normalTxt,
+                {marginVertical: 4, color: COLORS.grey},
+              ]}>
+              Available From: {house.available}
+            </Text>
+          )}
+          <Text
+            style={[
+              customStyles.normalTxt,
+              {marginVertical: 4, color: COLORS.grey},
+            ]}>
+            Furnishing Status: {house.furnished}
+          </Text>
+          <Text
+            style={[
+              customStyles.normalTxt,
+              {marginVertical: 4, color: COLORS.grey},
+            ]}>
+            Floor: {house.floorNo} of {house.totalFloors}
           </Text>
 
           <FlatList

@@ -76,7 +76,6 @@ export const getFilteredPropsAction = (keyword = '', pageNumber = '') => {
       const {data} = await axios.get(
         `${localApi}/properties/filtered?keyword=${keyword}&pageNumber=${pageNumber}`,
       );
-      console.log(data);
       dispatch({type: GET_FILTERED_PROPS_SUCCESS, payload: data});
     } catch (error) {
       error.response

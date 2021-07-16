@@ -54,7 +54,7 @@ export const getAllPropertiesReducer = (state = {res: []}, action) => {
   }
 };
 
-export const getFilteredPropReducer = (state = {res: []}, action) => {
+export const getFilteredPropReducer = (state = {res: {}}, action) => {
   switch (action.type) {
     case GET_FILTERED_PROPS_REQ:
       return {
@@ -68,7 +68,7 @@ export const getFilteredPropReducer = (state = {res: []}, action) => {
     case GET_FILTERED_PROPS_FAIL:
       return {
         loading: false,
-        res: [],
+        res: {},
         err: action.payload,
       };
     default:

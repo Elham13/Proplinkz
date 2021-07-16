@@ -13,6 +13,17 @@ import COLORS from '../../consts/colors';
 const WIDTH = Dimensions.get('window').width;
 
 const GeneralHeader = ({navigation}) => {
+  const handleSearch = txt => {
+    navigation.navigate('BuyHome', {title: 'Search Result', keyword: txt});
+  };
+
+  const handleFilter = () => {
+    navigation.navigate('BuyHome', {
+      title: 'Find your dream home',
+      keyword: '',
+    });
+  };
+
   return (
     <View style={styles.header}>
       <TouchableOpacity
@@ -27,10 +38,14 @@ const GeneralHeader = ({navigation}) => {
           <TextInput
             placeholder="Search address, city, location"
             style={styles.input}
+            onEndEditing={e => handleSearch(e.nativeEvent.text)}
           />
         </View>
 
-        <TouchableOpacity activeOpacity={0.5} style={styles.sortBtn}>
+        <TouchableOpacity
+          activeOpacity={0.6}
+          style={styles.sortBtn}
+          onPress={handleFilter}>
           <Icon name="tune" color={COLORS.accent} size={25} />
         </TouchableOpacity>
       </View>

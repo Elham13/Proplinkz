@@ -10,6 +10,7 @@ import BuyHome from '../views/screens/BuyHome';
 import Login from '../views/screens/Login';
 import Register from '../views/screens/Register';
 import PostProperty from '../views/screens/seller/PostProperty';
+import TestScreen from '../views/screens/test/TestScreen';
 import {StyleSheet, Text, View} from 'react-native';
 
 const Stack = createStackNavigator();
@@ -58,6 +59,11 @@ const AllStacks = () => {
       <Stack.Screen
         name="Register"
         component={Register}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="TestScreen"
+        component={TestScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

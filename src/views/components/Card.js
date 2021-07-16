@@ -19,7 +19,7 @@ const Card = ({house, navigation}) => {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
-      onPress={() => navigation.navigate('DetailsScreen', house)}>
+      onPress={() => navigation.navigate('DetailsScreen', {house: house})}>
       <View style={style.card}>
         <Image source={{uri: house.photos[0]}} style={style.cardImage} />
         <View style={{marginTop: 10}}>

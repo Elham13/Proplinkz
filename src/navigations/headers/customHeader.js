@@ -1,10 +1,29 @@
 import React from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View, Share} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import COLORS from '../../consts/colors';
 
 const CustomHeader = ({purpose, navigation, onlyBack}) => {
+  const shareHandler = async () => {
+    try {
+      const result = await Share.share({
+        title: 'GMS Ads',
+        message: `Share proplinkz some link`,
+      });
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // shared with activity type of result.activityType
+        } else {
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // dismissed
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  };
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -17,7 +36,10 @@ const CustomHeader = ({purpose, navigation, onlyBack}) => {
       <View style={{flexDirection: 'row'}}>
         {!onlyBack && (
           <>
-            <TouchableOpacity activeOpacity={0.6} style={styles.btn}>
+            <TouchableOpacity
+              activeOpacity={0.6}
+              style={styles.btn}
+              onPress={shareHandler}>
               <Icon name="share" color={COLORS.white} size={24} />
             </TouchableOpacity>
             <TouchableOpacity activeOpacity={0.6} style={styles.btn}>
