@@ -68,14 +68,12 @@ export const getAllPropertiesAction = () => {
   };
 };
 
-export const getFilteredPropsAction = (keyword = '', pageNumber = '') => {
+export const getFilteredPropsAction = load => {
   return async dispatch => {
     dispatch({type: GET_FILTERED_PROPS_REQ});
 
     try {
-      const {data} = await axios.get(
-        `${localApi}/properties/filtered?keyword=${keyword}&pageNumber=${pageNumber}`,
-      );
+      const {data} = await axios.post(`${localApi}/properties/filtered`, load);
       dispatch({type: GET_FILTERED_PROPS_SUCCESS, payload: data});
     } catch (error) {
       error.response

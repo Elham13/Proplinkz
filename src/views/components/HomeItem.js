@@ -67,7 +67,7 @@ const HomeItem = ({data, navigation}) => {
           style={customStyles.btnOutline}
           onPress={handleChat}>
           <Text style={customStyles.normalTxt}>
-            <FontAwesome name="whatsapp" color={COLORS.success} size={12} />
+            <FontAwesome name="whatsapp" color={COLORS.success} size={12} />{' '}
             Chat
           </Text>
         </TouchableOpacity>

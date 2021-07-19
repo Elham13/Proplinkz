@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import COLORS from '../../consts/colors';
 
-const CustomHeader = ({purpose, navigation, onlyBack}) => {
+const CustomHeader = ({purpose, navigation, onlyBack, showFilter}) => {
   const shareHandler = async () => {
     try {
       const result = await Share.share({
@@ -45,6 +45,18 @@ const CustomHeader = ({purpose, navigation, onlyBack}) => {
             <TouchableOpacity activeOpacity={0.6} style={styles.btn}>
               <Ionicons name="heart-outline" color={COLORS.white} size={24} />
             </TouchableOpacity>
+            {showFilter && (
+              <TouchableOpacity
+                activeOpacity={0.6}
+                style={styles.btn}
+                onPress={() =>
+                  navigation.navigate('FiltersScreen', {
+                    title: 'Find your dream home',
+                  })
+                }>
+                <Icon name="tune" color={COLORS.white} size={24} />
+              </TouchableOpacity>
+            )}
           </>
         )}
       </View>

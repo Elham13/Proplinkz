@@ -4,7 +4,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Text,
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -18,9 +17,8 @@ const GeneralHeader = ({navigation}) => {
   };
 
   const handleFilter = () => {
-    navigation.navigate('BuyHome', {
+    navigation.navigate('FiltersScreen', {
       title: 'Find your dream home',
-      keyword: '',
     });
   };
 
@@ -46,7 +44,7 @@ const GeneralHeader = ({navigation}) => {
           activeOpacity={0.6}
           style={styles.sortBtn}
           onPress={handleFilter}>
-          <Icon name="tune" color={COLORS.accent} size={25} />
+          <Icon name="tune" color={COLORS.white} size={25} />
         </TouchableOpacity>
       </View>
     </View>
@@ -89,12 +87,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sortBtn: {
-    backgroundColor: COLORS.light,
-    height: 30,
-    width: 30,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginLeft: 10,
   },
 });

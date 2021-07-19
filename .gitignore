@@ -60,3 +60,4 @@ buck-out/
 
 test.json
 .env
+test

@@ -1,5 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {ActivityIndicator, FlatList, View, StyleSheet} from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  View,
+  StyleSheet,
+  Text,
+} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {TabBar} from 'react-native-ui-lib';
 import CustomHeader from '../../navigations/headers/customHeader';
@@ -23,7 +29,10 @@ const BuyHome = ({route, navigation}) => {
       dispatch(getFilteredPropsAction('Rent', '1'));
       return;
     }
-    dispatch(getFilteredPropsAction(keyword, '1'));
+    if (title === 'Search Result') {
+      dispatch(getFilteredPropsAction(keyword, '1'));
+      return;
+    }
   }, [title, houses]);
 
   // useEffect(() => {
@@ -32,43 +41,8 @@ const BuyHome = ({route, navigation}) => {
 
   return (
     <View>
-      <CustomHeader purpose={title} navigation={navigation} />
-      <TabBar
-        darkTheme={true}
-        selectedIndex={0}
-        indicatorStyle={styles.indicatore}>
-        <TabBar.Item
-          label="Scroll"
-          labelStyle={{color: COLORS.success}}
-          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
-        />
-        <TabBar.Item
-          label="View"
-          labelStyle={{color: COLORS.success}}
-          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
-          badgeProps={{size: 'pimpleSmall'}}
-        />
-        <TabBar.Item
-          label="tab"
-          labelStyle={{color: COLORS.success}}
-          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
-        />
-        <TabBar.Item
-          label="bar"
-          labelStyle={{color: COLORS.success}}
-          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
-        />
-        <TabBar.Item
-          label="Container"
-          labelStyle={{color: COLORS.success}}
-          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
-        />
-        <TabBar.Item
-          label="Mode"
-          labelStyle={{color: COLORS.success}}
-          selectedLabelStyle={{color: COLORS.accent, fontWeight: '700'}}
-        />
-      </TabBar>
+      <CustomHeader purpose={title} navigation={navigation} showFilter={true} />
+
       {filtered.loading ? (
         <ActivityIndicator color={COLORS.accent} size="large" />
       ) : filtered.err ? (
@@ -91,8 +65,4 @@ const BuyHome = ({route, navigation}) => {
 
 export default BuyHome;
 
-const styles = StyleSheet.create({
-  indicatore: {
-    backgroundColor: COLORS.accent,
-  },
-});
+const styles = StyleSheet.create({});
