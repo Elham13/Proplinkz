@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -7,7 +7,6 @@ import {
   Text,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
-import {TabBar} from 'react-native-ui-lib';
 import CustomHeader from '../../navigations/headers/customHeader';
 import HomeItem from '../components/HomeItem';
 import houses from '../../consts/houses';
@@ -22,15 +21,15 @@ const BuyHome = ({route, navigation}) => {
 
   useEffect(() => {
     if (title === 'Buy a Property') {
-      dispatch(getFilteredPropsAction('Sale', '1'));
+      dispatch(getFilteredPropsAction({purpose: 'Sale'}));
       return;
     }
     if (title === 'Rent a Property') {
-      dispatch(getFilteredPropsAction('Rent', '1'));
+      dispatch(getFilteredPropsAction({purpose: 'Rent'}));
       return;
     }
     if (title === 'Search Result') {
-      dispatch(getFilteredPropsAction(keyword, '1'));
+      dispatch(getFilteredPropsAction({locations: [keyword]}));
       return;
     }
   }, [title, houses]);

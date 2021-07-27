@@ -49,13 +49,13 @@ const DrawerContent = ({navigation}) => {
             </View>
             <MaterialIcons name="double-arrow" size={10} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.drawerNav} onPress={handleTestScreen}>
+          {/* <TouchableOpacity style={styles.drawerNav} onPress={handleTestScreen}>
             <View style={styles.navTxtWrapper}>
               <MaterialIcons name="circle" size={10} color="#333" />
               <Text style={styles.navTxt}>Test screen</Text>
             </View>
             <MaterialIcons name="double-arrow" size={10} color="#333" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </View>

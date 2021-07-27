@@ -187,7 +187,7 @@ const Login = ({navigation}) => {
               colors={[COLORS.accent, '#48caf3']}
               style={styles.signIn}>
               {login.loading ? (
-                <ActivityIndicator />
+                <ActivityIndicator color={COLORS.white} />
               ) : (
                 <Text style={[styles.textSign, {color: '#fff'}]}>Login</Text>
               )}

@@ -22,10 +22,14 @@ const listTab = [
   {status: 'Buy', value: 'Sale'},
 ];
 const propTypesData = [
-  {id: '1', name: 'Flat'},
+  {id: '1', name: 'Flat/Apartment'},
   {id: '2', name: 'Villa'},
-  {id: '3', name: 'House'},
-  {id: '4', name: 'Shop'},
+  {id: '3', name: 'Residential House'},
+  {id: '4', name: 'Builder Floor Apartment'},
+  {id: '5', name: 'Residential Land/Plot'},
+  {id: '6', name: 'Penthouse'},
+  {id: '7', name: 'Studio Apartment'},
+  {id: '8', name: 'Commercial Office Space'},
 ];
 const noOfBedrooms = [
   {id: '1', name: '1 BHK', value: 1},
@@ -123,7 +127,7 @@ const FiltersScreen = ({navigation, route}) => {
 
   const handleSubmit = () => {
     dispatch(getFilteredPropsAction(formData));
-    // navigation.navigate('BuyHome', {title: 'Search result'});
+    navigation.navigate('BuyHome', {title: 'Search result'});
   };
 
   const handleTabChange = value => {

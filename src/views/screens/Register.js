@@ -305,7 +305,7 @@ const Register = ({route, navigation}) => {
                 colors={[COLORS.accent, '#48caf3']}
                 style={styles.signIn}>
                 {register.loading ? (
-                  <ActivityIndicator />
+                  <ActivityIndicator color={COLORS.white} />
                 ) : (
                   <Text style={[styles.textSign, {color: '#fff'}]}>
                     Register

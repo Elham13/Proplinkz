@@ -36,6 +36,7 @@ const PostProperty = ({navigation}) => {
   const scrollView = useRef();
 
   const [date, setDate] = useState(new Date());
+  const [uploading, setUploading] = useState(false);
   const [popup, setPopup] = useState({
     open: false,
     color: '',
@@ -145,6 +146,7 @@ const PostProperty = ({navigation}) => {
               'Content-Type': 'multipart/form-data',
             },
           };
+          setUploading(true);
 
           axios
             .post(`${localApi}/upload/single`, fData, config)
@@ -154,8 +156,18 @@ const PostProperty = ({navigation}) => {
                 ...formData,
                 photos: [...formData.photos, res.data],
               });
+              setUploading(false);
             })
-            .catch(err => console.log('Axios err: ', err));
+            .catch(err => {
+              setUploading(false);
+              setPopup({
+                open: true,
+                color: COLORS.error,
+                message: err.message,
+                position: 'top',
+              });
+              console.log('Axios err: ', err);
+            });
         })
         .catch(err => console.log('Picker err', err));
     }
@@ -672,7 +684,9 @@ const PostProperty = ({navigation}) => {
       /> */}
 
       <View style={styles.imgWrapper}>
-        {formData.photos.length > 0 && (
+        {formData.photos.length > 0 && uploading ? (
+          <ActivityIndicator color={COLORS.accent} size="large" />
+        ) : (
           <>
             {formData.photos.map(photo => (
               <Image key={photo} source={{uri: photo}} style={styles.img} />

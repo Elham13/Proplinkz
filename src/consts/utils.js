@@ -5,7 +5,8 @@ import COLORS from './colors';
 export const WIDTH = Dimensions.get('window').width;
 export const HEIGHT = Dimensions.get('window').height;
 
-export const localApi = 'http://10.124.235.238:5001';
+// export const localApi = 'http://192.168.0.200:5001';
+export const localApi = 'https://proplinkz-server.herokuapp.com';
 
 export const proptypes = [
   'Flat/Apartment',
